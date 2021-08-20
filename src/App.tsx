@@ -1,9 +1,9 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { Grid, GridProps, word } from "./Grid";
+import { Grid, word } from "./Grid";
 
-const exampleState: GridProps = {
+const exampleState: Grid = {
   grid: [
     ['', 'A', 'N', 'D'],
     ['', 'M', 'O', 'K'],
@@ -25,6 +25,8 @@ function App() {
   return (
     <div className="mx-auto sm:w-3/4 md:w-2/4 fixed inset-0 flex items-center justify-center">
       <div className="flex flex-col items-center justify-center">
+        <Grid {...exampleState} showSolution />
+        <div className="m-4" />
         <Grid {...exampleState} />
       </div>
     </div>

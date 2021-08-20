@@ -13,7 +13,10 @@ interface Word {
 // prettier-ignore
 type Letter = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'
 
-export interface GridProps {
+export interface GridProps extends Grid {
+  showSolution?: boolean
+}
+export interface Grid {
   grid: (Letter | '')[][]
   words: Word[]
   offsetX: number
@@ -67,7 +70,7 @@ function getLines2(
   return lines
 }
 
-export function getLines({ grid, words, offsetX, offsetY }: GridProps) {
+export function getLines({ grid, words, offsetX, offsetY }: Grid) {
   return {
     horizontal: getLines2(
       grid[0].length - offsetX,
@@ -84,7 +87,7 @@ export function getLines({ grid, words, offsetX, offsetY }: GridProps) {
   }
 }
 
-export function getNumbers({ words }: GridProps): Pos[] {
+export function getNumbers({ words }: Grid): Pos[] {
   const uniqStarts = R.uniq(R.map((word) => word.start, words))
   const sorted = R.sortWith(
     [R.ascend(R.prop('y')), R.ascend(R.prop('x'))],
@@ -125,8 +128,8 @@ export function Grid(props: GridProps) {
                   }`}
                   key={x}
                 >
-                  { wordStartNumber >= 0 ? <span className="absolute top-0 left-1 text-sm">{wordStartNumber+1}</span> : null}
-                  {letter}
+                  { wordStartNumber >= 0 ? <span className="absolute top-0 left-1 text-xs">{wordStartNumber+1}</span> : null}
+                  { props.showSolution ? letter : null }
                 </div>
               )
             })}
