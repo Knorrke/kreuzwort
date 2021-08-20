@@ -1,74 +1,84 @@
-import { GridProps, getLines } from "./Grid";
+import { GridProps, getLines, word } from "./Grid";
 
 describe("lines test", () => {
   describe("horizontal", () => {
     it("resolves lineendings with multiple words in one line", () => {
       const grid: GridProps = {
-        width: 10,
-        height: 1,
-        horizontal: [
-          { word: "ABC", x: 0, y: 0 },
-          { word: "DEF", x: 4, y: 0 },
-          { word: "GHI", x: 7, y: 0 },
-        ],
-        vertical: [],
+        grid: [["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]],
+        words: [word(0, 0, 2, 0), word(4, 0, 6, 0), word(7, 0, 9, 0)],
+        offsetX: 0,
+        offsetY: 0,
       };
       const lines = getLines(grid);
       expect(lines.horizontal).toEqual([[2, 3, 6]]);
     });
     it("resolves lineendings with one word per line", () => {
       const grid: GridProps = {
-        width: 3,
-        height: 3,
-        horizontal: [
-          { word: "ABC", x: 0, y: 0 },
-          { word: "DE", x: 1, y: 1 },
-          { word: "FGHI", x: -1, y: 2 },
+        grid: [
+          // -1, 0, 1, 2
+          ["", "A", "B", "C"],
+          ["", "S", "D", "E"],
+          ["F", "G", "H", "I"],
         ],
-        vertical: [
-          { word: "AS", x: 0, y: 0 },
-          { word: "BDH", x: 1, y: 0 },
-          { word: "EIJ", x: 2, y: 1 },
+        words: [
+          word(0, 0, 2, 0),
+          word(1, 1, 2, 1),
+          word(-1, 2, 2, 2),
+          word(0, 0, 0, 1),
+          word(1, 0, 1, 2),
+          word(2, 1, 2, 3),
         ],
+        offsetX: 1,
+        offsetY: 0,
       };
 
-      const hLines = getLines(grid);
-      expect(hLines.horizontal).toEqual([[], [0], []]);
+      const lines = getLines(grid);
+      expect(lines.horizontal).toEqual([[], [0], []]);
     });
   });
   describe("vertical", () => {
     it("resolves lineendings with multiple words in one line", () => {
       const grid: GridProps = {
-        width: 1,
-        height: 10,
-        horizontal: [],
-        vertical: [
-          { word: "ABC", x: 0, y: 0 },
-          { word: "DEF", x: 0, y: 4 },
-          { word: "GHI", x: 0, y: 7 }
+        grid: [
+          ["A"],
+          ["B"],
+          ["C"],
+          ["D"],
+          ["E"],
+          ["F"],
+          ["G"],
+          ["H"],
+          ["I"],
+          ["J"],
         ],
+        words: [word(0, 0, 0, 2), word(0, 4, 0, 6), word(0, 7, 0, 9)],
+        offsetX: 0,
+        offsetY: 0,
       };
       const lines = getLines(grid);
       expect(lines.vertical).toEqual([[2, 3, 6]]);
     });
     it("resolves lineendings with one word per line", () => {
       const grid: GridProps = {
-        width: 3,
-        height: 3,
-        horizontal: [
-          { word: "ABC", x: 0, y: 0 },
-          { word: "DE", x: 1, y: 1 },
-          { word: "FGHI", x: -1, y: 2 },
+        grid: [
+          ["", "A", "N", "D"],
+          ["", "M", "O", "S"],
+          ["B", "O", "W", "L"],
         ],
-        vertical: [
-          { word: "AS", x: 0, y: 0 },
-          { word: "BDH", x: 1, y: 0 },
-          { word: "EIJ", x: 2, y: 1 },
+        words: [
+          word(0, 0, 2, 0),
+          word(1, 1, 2, 1),
+          word(-1, 2, 3, 2),
+          word(0, 0, 0, 1),
+          word(1, 0, 1, 2),
+          word(2, 1, 2, 3),
         ],
+        offsetX: 1,
+        offsetY: 0,
       };
 
-      const hLines = getLines(grid);
-      expect(hLines.vertical).toEqual([[1], [], [0]]);
+      const lines = getLines(grid);
+      expect(lines.vertical).toEqual([[1], [], [0]]);
     });
   });
 });

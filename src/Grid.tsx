@@ -1,21 +1,35 @@
 import * as R from "ramda";
 import { workerData } from "worker_threads";
 
-interface Word {
-  word: string;
+interface Pos {
   x: number;
   y: number;
 }
-
-type Line = { x: number } | { y: number };
+interface Word {
+  start: Pos;
+  end: Pos;
+}
+// prettier-ignore
+type Letter = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'
 
 export interface GridProps {
-  width: number;
-  height: number;
-  horizontal: Word[];
-  vertical: Word[];
+  grid: (Letter | "")[][];
+  words: Word[];
+  offsetX: number;
+  offsetY: number;
 }
 
+export function word(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number
+): Word {
+  return {
+    start: { x: startX, y: startY },
+    end: { x: endX, y: endY },
+  };
+}
 /**
  * Searches for horizontal (rowProp === 'x') or vertical lines (rowProp === 'y') lines for the cross word puzzle
  * @param width number of rows
@@ -36,32 +50,29 @@ function getLines2(
     () => R.times(R.identity, width - 1),
     height
   );
-  // sort
-  const sorted: Word[] = R.sortWith(
-    [R.ascend(R.prop(rowProp)), R.ascend(R.prop(colProp))],
+  const filtered: Word[] = R.filter(
+    (word) =>
+      horizontal ? word.start.y == word.end.y : word.start.x == word.end.x,
     words
   );
   R.forEach((word: Word) => {
-    const col = word[colProp];
-    const width = word[rowProp];
-    if (width > height) return;
-    if (col < 0) {
-      lines[width] = R.remove(0, word.word.length - 1 + col, lines[width]);
-    } else {
-      lines[width] = R.remove(
-        R.indexOf(col, lines[width]),
-        word.word.length - 1,
-        lines[width]
-      );
-    }
-  }, sorted);
+    const col = word.start[colProp];
+    const row = word.start[rowProp];
+    if (row > height) return;
+    const start = col < 0 ? 0 : R.indexOf(col, lines[row]);
+    const length =
+      col < 0
+        ? word.end[colProp]
+        : word.end[colProp] - col
+    lines[row] = R.remove(start, length, lines[row]);
+  }, filtered);
   return lines;
 }
 
-export function getLines({ width, height, horizontal, vertical }: GridProps) {
+export function getLines({ grid, words, offsetX, offsetY }: GridProps) {
   return {
-    horizontal: getLines2(width, height, horizontal, true),
-    vertical: getLines2(height, width, vertical, false),
+    horizontal: getLines2(grid[0].length - offsetX, grid.length - offsetY, words, true),
+    vertical: getLines2(grid.length - offsetY, grid[0].length - offsetX, words, false),
   };
 }
 
