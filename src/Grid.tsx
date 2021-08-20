@@ -1,3 +1,4 @@
+import React from "react";
 import * as R from "ramda";
 import { workerData } from "worker_threads";
 
@@ -60,10 +61,7 @@ function getLines2(
     const row = word.start[rowProp];
     if (row > height) return;
     const start = col < 0 ? 0 : R.indexOf(col, lines[row]);
-    const length =
-      col < 0
-        ? word.end[colProp]
-        : word.end[colProp] - col
+    const length = col < 0 ? word.end[colProp] : word.end[colProp] - col;
     lines[row] = R.remove(start, length, lines[row]);
   }, filtered);
   return lines;
@@ -71,12 +69,58 @@ function getLines2(
 
 export function getLines({ grid, words, offsetX, offsetY }: GridProps) {
   return {
-    horizontal: getLines2(grid[0].length - offsetX, grid.length - offsetY, words, true),
-    vertical: getLines2(grid.length - offsetY, grid[0].length - offsetX, words, false),
+    horizontal: getLines2(
+      grid[0].length - offsetX,
+      grid.length - offsetY,
+      words,
+      true
+    ),
+    vertical: getLines2(
+      grid.length - offsetY,
+      grid[0].length - offsetX,
+      words,
+      false
+    ),
   };
+}
+
+export function getNumbers({ grid, words, offsetX, offsetY }: GridProps) {
+  
 }
 
 export function Grid(props: GridProps) {
   const lines = getLines(props);
-  return <>hello</>;
+  return (
+    <>
+      {props.grid.map((row, i) => {
+        return (
+          <div className="flex flex-row text-lg" key={i}>
+            {row.map((letter, j) => {
+              if (!letter) return (
+                <div className='flex w-12 h-12' />
+              )
+              return (
+                <div
+                  className={`flex w-12 h-12 items-center justify-center border border-black ${
+                    i >= props.offsetY &&
+                    j >= props.offsetX &&
+                    lines.horizontal[i - props.offsetY]?.includes(j - props.offsetX) ?
+                    'border-r-4' : ''
+                  } ${
+                    i >= props.offsetY &&
+                    j >= props.offsetX &&
+                    lines.vertical[j - props.offsetX]?.includes(i - props.offsetY) ?
+                    'border-b-4' : ''
+                  }`}
+                  key={j}
+                >
+                  {letter}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </>
+  );
 }
