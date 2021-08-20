@@ -5,9 +5,9 @@ import { Grid, GridProps, word } from "./Grid";
 
 const exampleState: GridProps = {
   grid: [
-    ["", "A", "N", "D"],
-    ["", "M", "O", "S"],
-    ["B", "O", "W", "L"],
+    ['', 'A', 'N', 'D'],
+    ['', 'M', 'O', 'K'],
+    ['B', 'O', 'W', 'L'],
   ],
   words: [
     word(0, 0, 2, 0),

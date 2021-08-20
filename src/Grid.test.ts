@@ -1,4 +1,4 @@
-import { GridProps, getLines, word } from './Grid'
+import { GridProps, getLines, word, getNumbers } from './Grid'
 
 describe('lines test', () => {
   describe('horizontal', () => {

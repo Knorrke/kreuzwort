@@ -1,23 +1,23 @@
-import React from "react";
-import * as R from "ramda";
-import { workerData } from "worker_threads";
+import React from 'react'
+import * as R from 'ramda'
+import { workerData } from 'worker_threads'
 
 interface Pos {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 interface Word {
-  start: Pos;
-  end: Pos;
+  start: Pos
+  end: Pos
 }
 // prettier-ignore
 type Letter = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'
 
 export interface GridProps {
-  grid: (Letter | "")[][];
-  words: Word[];
-  offsetX: number;
-  offsetY: number;
+  grid: (Letter | '')[][]
+  words: Word[]
+  offsetX: number
+  offsetY: number
 }
 
 export function word(
@@ -29,7 +29,7 @@ export function word(
   return {
     start: { x: startX, y: startY },
     end: { x: endX, y: endY },
-  };
+  }
 }
 /**
  * Searches for horizontal (rowProp === 'x') or vertical lines (rowProp === 'y') lines for the cross word puzzle
@@ -45,26 +45,26 @@ function getLines2(
   words: Word[],
   horizontal: boolean
 ) {
-  const colProp = horizontal ? "x" : "y";
-  const rowProp = horizontal ? "y" : "x";
+  const colProp = horizontal ? 'x' : 'y'
+  const rowProp = horizontal ? 'y' : 'x'
   const lines: number[][] = R.times(
     () => R.times(R.identity, width - 1),
     height
-  );
+  )
   const filtered: Word[] = R.filter(
     (word) =>
       horizontal ? word.start.y == word.end.y : word.start.x == word.end.x,
     words
-  );
+  )
   R.forEach((word: Word) => {
-    const col = word.start[colProp];
-    const row = word.start[rowProp];
-    if (row > height) return;
-    const start = col < 0 ? 0 : R.indexOf(col, lines[row]);
-    const length = col < 0 ? word.end[colProp] : word.end[colProp] - col;
-    lines[row] = R.remove(start, length, lines[row]);
-  }, filtered);
-  return lines;
+    const col = word.start[colProp]
+    const row = word.start[rowProp]
+    if (row > height) return
+    const start = col < 0 ? 0 : R.indexOf(col, lines[row])
+    const length = col < 0 ? word.end[colProp] : word.end[colProp] - col
+    lines[row] = R.remove(start, length, lines[row])
+  }, filtered)
+  return lines
 }
 
 export function getLines({ grid, words, offsetX, offsetY }: GridProps) {
@@ -81,46 +81,58 @@ export function getLines({ grid, words, offsetX, offsetY }: GridProps) {
       words,
       false
     ),
-  };
+  }
 }
 
-export function getNumbers({ grid, words, offsetX, offsetY }: GridProps) {
-  
+export function getNumbers({ words }: GridProps): Pos[] {
+  const uniqStarts = R.uniq(R.map((word) => word.start, words))
+  const sorted = R.sortWith(
+    [R.ascend(R.prop('y')), R.ascend(R.prop('x'))],
+    uniqStarts
+  )
+  return sorted
 }
 
 export function Grid(props: GridProps) {
-  const lines = getLines(props);
+  const lines = getLines(props)
+  const numbers = getNumbers(props)
   return (
     <>
-      {props.grid.map((row, i) => {
+      {props.grid.map((row, y) => {
         return (
-          <div className="flex flex-row text-lg" key={i}>
-            {row.map((letter, j) => {
-              if (!letter) return (
-                <div className='flex w-12 h-12' />
-              )
+          <div className="flex flex-row text-lg" key={y}>
+            {row.map((letter, x) => {
+              if (!letter) return <div className="flex w-12 h-12" key={x} />
+              const wordStartNumber = R.indexOf({x: x-props.offsetX, y: y-props.offsetY}, numbers)
               return (
                 <div
-                  className={`flex w-12 h-12 items-center justify-center border border-black ${
-                    i >= props.offsetY &&
-                    j >= props.offsetX &&
-                    lines.horizontal[i - props.offsetY]?.includes(j - props.offsetX) ?
-                    'border-r-4' : ''
+                  className={`relative flex w-12 h-12 items-center justify-center border border-black ${
+                    y >= props.offsetY &&
+                    x >= props.offsetX &&
+                    lines.horizontal[y - props.offsetY]?.includes(
+                      x - props.offsetX
+                    )
+                      ? 'border-r-4'
+                      : ''
                   } ${
-                    i >= props.offsetY &&
-                    j >= props.offsetX &&
-                    lines.vertical[j - props.offsetX]?.includes(i - props.offsetY) ?
-                    'border-b-4' : ''
+                    y >= props.offsetY &&
+                    x >= props.offsetX &&
+                    lines.vertical[x - props.offsetX]?.includes(
+                      y - props.offsetY
+                    )
+                      ? 'border-b-4'
+                      : ''
                   }`}
-                  key={j}
+                  key={x}
                 >
+                  { wordStartNumber >= 0 ? <span className="absolute top-0 left-1 text-sm">{wordStartNumber+1}</span> : null}
                   {letter}
                 </div>
-              );
+              )
             })}
           </div>
-        );
+        )
       })}
     </>
-  );
+  )
 }
