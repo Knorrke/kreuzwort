@@ -1,3 +1,4 @@
+import isHotkey from 'is-hotkey'
 import * as R from 'ramda'
 import React from 'react'
 import {
@@ -9,6 +10,8 @@ import {
   addWord,
   word,
   isValidWord,
+  undo,
+  redo,
 } from './reducer'
 import { StateContext } from './StateContext'
 
@@ -80,6 +83,12 @@ export function getNumbers({ words }: State): Pos[] {
 }
 
 export function Grid(props: GridProps) {
+  const [dragImg] = React.useState(() => {
+    const dragImg = new Image(0, 0)
+    dragImg.src =
+      'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+    return dragImg
+  })
   const { state, dispatch } = React.useContext(StateContext)
   const lines = getLines(state)
   const numbers = getNumbers(state)
@@ -110,7 +119,14 @@ export function Grid(props: GridProps) {
     <>
       {state.grid.map((row, y) => {
         return (
-          <div className="flex flex-row text-lg" key={y}>
+          <div
+            className="flex flex-row text-lg"
+            key={y}
+            onDragOver={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+          >
             {row.map((letter, x) => {
               const vertical = R.filter(
                 (w) => w.start.x === w.end.x,
@@ -150,7 +166,8 @@ export function Grid(props: GridProps) {
                   draggable
                   className="relative flex w-10 h-10 items-center justify-center"
                   key={x}
-                  onDragStart={() => {
+                  onDragStart={(e) => {
+                    e.dataTransfer.setDragImage(dragImg, 0, 0)
                     setDragStart({ x, y })
                   }}
                   onDragEnter={() => {
@@ -295,26 +312,33 @@ export function Grid(props: GridProps) {
                           }
                         }}
                         onClick={(e) => (e.target as HTMLInputElement).select()}
-                        onFocus={(e) => (e.target as HTMLInputElement).select()}
+                        // onFocus={(e) => (e.target as HTMLInputElement).select()}
                         onKeyDown={(e) => {
-                          switch (e.key) {
-                            case 'ArrowLeft':
-                              focusInput(x - 1, y)
-                              e.preventDefault()
-                              break
-                            case 'ArrowRight':
-                              focusInput(x + 1, y)
-                              e.preventDefault()
-                              break
-                            case 'ArrowUp':
-                              focusInput(x, y - 1)
-                              e.preventDefault()
-                              break
-                            case 'ArrowDown':
-                            case 'Enter':
-                              focusInput(x, y + 1)
-                              e.preventDefault()
-                              break
+                          if (isHotkey('left')(e.nativeEvent)) {
+                            focusInput(x - 1, y)
+                            e.preventDefault()
+                          } else if (isHotkey('right')(e.nativeEvent)) {
+                            focusInput(x + 1, y)
+                            e.preventDefault()
+                          } else if (
+                            isHotkey('up')(e.nativeEvent) ||
+                            isHotkey('shift+enter')(e.nativeEvent)
+                          ) {
+                            focusInput(x, y - 1)
+                            e.preventDefault()
+                          } else if (
+                            isHotkey('down')(e.nativeEvent) ||
+                            isHotkey('enter')(e.nativeEvent)
+                          ) {
+                            focusInput(x, y + 1)
+                            e.preventDefault()
+                          } else if (isHotkey('mod+z')(e.nativeEvent)) {
+                            dispatch(undo())
+                          } else if (
+                            isHotkey('mod+shift+z')(e.nativeEvent) ||
+                            isHotkey('mod+y')(e.nativeEvent)
+                          ) {
+                            dispatch(redo())
                           }
                         }}
                         tabIndex={0}

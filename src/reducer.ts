@@ -47,14 +47,17 @@ export function withHistory(baseState: BaseState): State {
   }
 }
 export function isValidWord(word: Word, words: Word[]) {
+  // check if it is in one line
+  if (word.start.x !== word.end.x && word.start.y !== word.end.y) return false
+
   const filterSameLine = R.filter((w) => {
     return word.start.x === word.end.x // word is vertical
       ? w.start.x === w.end.x && w.start.x === word.start.x // filter only vertical in same col
       : w.start.y === w.end.y && w.start.y === word.start.y // filter only horizontal in same row
   }, words)
   return (
-        // check if word start is intersecting existing word
-        R.findIndex((w) => {
+    // check if word start is intersecting existing word
+    R.findIndex((w) => {
       if (word.start.x === word.end.x) {
         return word.start.y >= w.start.y && word.start.y <= w.end.y
       } else {
@@ -67,7 +70,7 @@ export function isValidWord(word: Word, words: Word[]) {
 interface ChangeAction {
   type: 'ChangeAction'
   payload: {
-    letter: Letter|''
+    letter: Letter | ''
     x: number
     y: number
   }
@@ -88,6 +91,10 @@ interface RedoAction {
   type: 'RedoAction'
 }
 
+interface ResetAction {
+  type: 'ResetAction'
+}
+
 interface InitializeAction {
   type: 'InitializeAction'
 }
@@ -97,6 +104,7 @@ export type Action =
   | WordAction
   | UndoAction
   | RedoAction
+  | ResetAction
   | InitializeAction
 
 export function reducer(
@@ -159,7 +167,6 @@ export function reducer(
         previous,
         previous.history.undoStack[previous.history.undoStack.length - 1]
       )
-      console.log('redone', nextState, previous.history)
       return {
         ...nextState,
         history: {
@@ -168,12 +175,20 @@ export function reducer(
         },
       }
     }
-    default:
+    case 'ResetAction':
+      return {
+        ...reducer(previous.history.initialState),
+      }
+    case 'InitializeAction':
       return previous
   }
 }
 
-export function change(letter: Letter|'', x: number, y: number): ChangeAction {
+export function change(
+  letter: Letter | '',
+  x: number,
+  y: number
+): ChangeAction {
   return {
     type: 'ChangeAction',
     payload: {
@@ -202,5 +217,11 @@ export function undo(): UndoAction {
 export function redo(): RedoAction {
   return {
     type: 'RedoAction',
+  }
+}
+
+export function reset(): ResetAction {
+  return {
+    type: 'ResetAction',
   }
 }

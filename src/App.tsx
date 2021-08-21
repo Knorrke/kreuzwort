@@ -1,16 +1,19 @@
 import React from 'react'
 import { GlobalHotKeys } from 'react-hotkeys'
-import './App.css'
+import { AutoSave, loadSavedState } from './AutoSave'
 import { Grid } from './Grid'
-import { Action, redo, reducer, State, undo } from './reducer'
+import { Action, redo, reducer, reset, State, undo } from './reducer'
 import { initialState, StateContext } from './StateContext'
 
 function App() {
-  const [state, dispatch] = React.useReducer<React.Reducer<State, Action>>(reducer, initialState)
+  const [state, dispatch] = React.useReducer<React.Reducer<State, Action>>(
+    reducer,
+    loadSavedState() || initialState
+  )
   const [highlightHorizontal, setHighlightHorizontal] = React.useState(false)
   const [highlightVertical, setHighlightVertical] = React.useState(false)
   return (
-    <div className="mx-auto sm:w-3/4 md:w-2/4 fixed inset-0 flex items-center justify-center">
+    <div className="mx-auto sm:w-3/4 md:w-2/4 mt-10 inset-0 flex items-center justify-center">
       <div className="flex flex-col items-center justify-center">
         <StateContext.Provider value={{ state: state, dispatch: dispatch }}>
           <GlobalHotKeys
@@ -19,10 +22,22 @@ function App() {
               REDO: ['ctrl+y', 'command+y', 'ctrl+shift+z', 'command+shift+z'],
             }}
             handlers={{
-              UNDO: () => { console.log('undo'); dispatch(undo()) },
-              REDO: () => { console.log('redo'); dispatch(redo()) },
+              UNDO: () => dispatch(undo()),
+              REDO: () => dispatch(redo()),
             }}
           >
+            <AutoSave />
+            <div className="right flex flex-row space-x-4">
+              <button
+                onClick={() => {
+                  if (window.confirm('Alles löschen?')) dispatch(reset())
+                }}
+              >
+                Reset
+              </button>
+              <button onClick={() => dispatch(undo())}>Undo</button>
+              <button onClick={() => dispatch(redo())}>Redo</button>
+            </div>
             <Grid
               showSolution
               highlightHorizontal={highlightHorizontal}
