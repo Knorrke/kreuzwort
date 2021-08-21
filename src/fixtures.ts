@@ -1,7 +1,6 @@
-import { State, word } from "./reducer";
+import { word, withHistory } from './reducer'
 
-
-export const exampleState: State = {
+export const exampleState = withHistory({
   grid: [
     ['', 'A', 'N', 'D'],
     ['', 'M', 'O', 'K'],
@@ -15,6 +14,6 @@ export const exampleState: State = {
     word(1, 0, 1, 2),
     word(2, 1, 2, 2),
   ],
-  offsetX: 1,
-  offsetY: 0,
-};
+  offsetX: [1, 0],
+  offsetY: [0, 0],
+})

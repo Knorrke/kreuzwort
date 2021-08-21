@@ -1,17 +1,26 @@
 import React from 'react'
 import * as R from 'ramda'
-import { State, Action, word } from './reducer'
+import { State, Action, BaseState } from './reducer'
 
-export const initialState: State = {
-  grid: R.times(() => R.times<''>(() => '', 15), 10),
+const baseState: BaseState = {
+  grid: R.times(() => R.times<''>(() => '', 26), 19),
   words: [],
-  offsetX: 0,
-  offsetY: 0,
+  offsetX: [1, 0],
+  offsetY: [2, 1],
+}
+
+export const initialState = {
+  ...baseState,
+  history: {
+    initialState: baseState,
+    actions: [],
+    undoStack: [],
+  },
 }
 
 export const StateContext = React.createContext<{
   state: State
-  dispatch: (action?: Action) => void
+  dispatch: (action: Action) => void
 }>({
   state: initialState,
   dispatch: () => {},
