@@ -150,17 +150,17 @@ export function Grid(props: GridProps) {
                   ? `${
                       lines.horizontal[y - state.offsetY[0]]?.includes(
                         x - state.offsetX[0]
-                      )
+                      ) && letter
                         ? 'border-r-4'
                         : 'pr-1'
                     } ${
                       lines.vertical[x - state.offsetX[0]]?.includes(
                         y - state.offsetY[0]
-                      )
+                      ) && letter
                         ? 'border-b-4'
                         : 'pb-1'
                     }`
-                  : 'border-dashed')
+                  : props.showSolution ? 'border-dashed' : 'border-none')
               return (
                 <div
                   draggable

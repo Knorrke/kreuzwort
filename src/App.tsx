@@ -47,10 +47,12 @@ function App() {
               <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => {
-                  if (window.confirm('Alles löschen?')) dispatch(reset())
+                  if (window.confirm('Alles löschen?')) {
+                    dispatch(reset(initialState))
+                  }
                 }}
               >
-                <FontAwesomeIcon icon={faTrash}  className="mr-2" />
+                <FontAwesomeIcon icon={faTrash} className="mr-2" />
                 Zurücksetzen
               </button>
             </div>
@@ -84,8 +86,8 @@ function App() {
               highlightHorizontal={highlightHorizontal}
               highlightVertical={highlightVertical}
             />
-            {/* <div className="m-4" />
-          <Grid /> */}
+            <div className="m-4" />
+            <Grid />
           </GlobalHotKeys>
         </StateContext.Provider>
       </div>

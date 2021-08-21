@@ -92,7 +92,10 @@ interface RedoAction {
 }
 
 interface ResetAction {
-  type: 'ResetAction'
+  type: 'ResetAction',
+  payload: {
+    baseState?: BaseState
+  }
 }
 
 interface InitializeAction {
@@ -177,7 +180,7 @@ export function reducer(
     }
     case 'ResetAction':
       return {
-        ...reducer(previous.history.initialState),
+        ...reducer(action.payload.baseState || previous.history.initialState),
       }
     case 'InitializeAction':
       return previous
@@ -220,8 +223,11 @@ export function redo(): RedoAction {
   }
 }
 
-export function reset(): ResetAction {
+export function reset(initial?:BaseState): ResetAction {
   return {
     type: 'ResetAction',
+    payload: {
+      baseState: initial
+    }
   }
 }
