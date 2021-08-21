@@ -33,16 +33,16 @@ function App() {
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => dispatch(undo())}
+                title="Rückgängig (Strg + Z)"
               >
-                <FontAwesomeIcon icon={faUndo}  className="mr-2"/>
-                Rückgängig
+                <FontAwesomeIcon icon={faUndo} />
               </button>
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => dispatch(redo())}
+                title="Wiederholen (Strg + Y)"
               >
-                <FontAwesomeIcon icon={faRedo} className="mr-2" />
-                Wiederholen
+                <FontAwesomeIcon icon={faRedo} />
               </button>
               <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
@@ -54,15 +54,8 @@ function App() {
                 Zurücksetzen
               </button>
             </div>
-            <Grid
-              showSolution
-              highlightHorizontal={highlightHorizontal}
-              highlightVertical={highlightVertical}
-            />
-            {/* <div className="m-4" />
-          <Grid /> */}
-            <div className="flex flex-col flex-align-left">
-              <div className="flex space-x-2">
+            <div className="flex flex-row flex-align-left mb-4">
+              <div className="flex space-x-2 mr-6">
                 <input
                   className="form-checkbox"
                   name="highlightHorizontal"
@@ -86,6 +79,13 @@ function App() {
                 </label>
               </div>
             </div>
+            <Grid
+              showSolution
+              highlightHorizontal={highlightHorizontal}
+              highlightVertical={highlightVertical}
+            />
+            {/* <div className="m-4" />
+          <Grid /> */}
           </GlobalHotKeys>
         </StateContext.Provider>
       </div>
