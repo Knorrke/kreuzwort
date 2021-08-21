@@ -1,9 +1,10 @@
-import { GridProps, getLines, word, getNumbers } from './Grid'
+import { getLines, getNumbers } from './Grid'
+import { State, word } from "./reducer"
 
 describe('lines test', () => {
   describe('horizontal', () => {
     it('resolves lineendings with multiple words in one line', () => {
-      const grid: GridProps = {
+      const grid: State = {
         grid: [['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']],
         words: [word(0, 0, 2, 0), word(4, 0, 6, 0), word(7, 0, 9, 0)],
         offsetX: 0,
@@ -13,7 +14,7 @@ describe('lines test', () => {
       expect(lines.horizontal).toEqual([[2, 3, 6]])
     })
     it('resolves lineendings with one word per line', () => {
-      const grid: GridProps = {
+      const grid: State = {
         grid: [
           ['', 'A', 'N', 'D'],
           ['', 'M', 'O', 'K'],
@@ -37,7 +38,7 @@ describe('lines test', () => {
   })
   describe('vertical', () => {
     it('resolves lineendings with multiple words in one line', () => {
-      const grid: GridProps = {
+      const grid: State = {
         grid: [
           ['A'],
           ['B'],
@@ -58,7 +59,7 @@ describe('lines test', () => {
       expect(lines.vertical).toEqual([[2, 3, 6]])
     })
     it('resolves lineendings with one word per line', () => {
-      const grid: GridProps = {
+      const grid: State = {
         grid: [
           ['', 'A', 'N', 'D'],
           ['', 'M', 'O', 'K'],
@@ -83,8 +84,8 @@ describe('lines test', () => {
 })
 
 describe('numbers test', () => {
-  it('numbers correctly', () => {
-    const grid: GridProps = {
+  it('preduces correct numbers', () => {
+    const grid: State = {
       grid: [
         ['', 'A', 'N', 'D'],
         ['', 'M', 'O', 'K'],

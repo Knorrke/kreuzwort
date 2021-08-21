@@ -1,38 +1,10 @@
-import React from 'react'
 import * as R from 'ramda'
-import { workerData } from 'worker_threads'
+import React from 'react'
+import { State, Pos, Word, change, isLetter } from './reducer'
+import { StateContext } from './StateContext'
 
-interface Pos {
-  x: number
-  y: number
-}
-interface Word {
-  start: Pos
-  end: Pos
-}
-// prettier-ignore
-type Letter = 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'
-
-export interface GridProps extends Grid {
+export interface GridProps {
   showSolution?: boolean
-}
-export interface Grid {
-  grid: (Letter | '')[][]
-  words: Word[]
-  offsetX: number
-  offsetY: number
-}
-
-export function word(
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number
-): Word {
-  return {
-    start: { x: startX, y: startY },
-    end: { x: endX, y: endY },
-  }
 }
 /**
  * Searches for horizontal (rowProp === 'x') or vertical lines (rowProp === 'y') lines for the cross word puzzle
@@ -70,7 +42,7 @@ function getLines2(
   return lines
 }
 
-export function getLines({ grid, words, offsetX, offsetY }: Grid) {
+export function getLines({ grid, words, offsetX, offsetY }: State) {
   return {
     horizontal: getLines2(
       grid[0].length - offsetX,
@@ -87,7 +59,7 @@ export function getLines({ grid, words, offsetX, offsetY }: Grid) {
   }
 }
 
-export function getNumbers({ words }: Grid): Pos[] {
+export function getNumbers({ words }: State): Pos[] {
   const uniqStarts = R.uniq(R.map((word) => word.start, words))
   const sorted = R.sortWith(
     [R.ascend(R.prop('y')), R.ascend(R.prop('x'))],
@@ -97,39 +69,47 @@ export function getNumbers({ words }: Grid): Pos[] {
 }
 
 export function Grid(props: GridProps) {
-  const lines = getLines(props)
-  const numbers = getNumbers(props)
+  const { state, dispatch } = React.useContext(StateContext)
+  const lines = getLines(state)
+  const numbers = getNumbers(state)
   return (
     <>
-      {props.grid.map((row, y) => {
+      {state.grid.map((row, y) => {
         return (
           <div className="flex flex-row text-lg" key={y}>
             {row.map((letter, x) => {
-              if (!letter) return <div className="flex w-12 h-12" key={x} />
-              const wordStartNumber = R.indexOf({x: x-props.offsetX, y: y-props.offsetY}, numbers)
+              const wordStartNumber = R.indexOf({x: x-state.offsetX, y: y-state.offsetY}, numbers)
+              const border = 'border border-black ' + (y >= state.offsetY && x >= state.offsetX && letter ? `${
+                lines.horizontal[y - state.offsetY]?.includes(
+                  x - state.offsetX
+                )
+                  ? 'border-r-4'
+                  : ''
+              } ${
+                lines.vertical[x - state.offsetX]?.includes(
+                  y - state.offsetY
+                )
+                  ? 'border-b-4'
+                  : ''
+              }` : 'border-dashed')
               return (
                 <div
-                  className={`relative flex w-12 h-12 items-center justify-center border border-black ${
-                    y >= props.offsetY &&
-                    x >= props.offsetX &&
-                    lines.horizontal[y - props.offsetY]?.includes(
-                      x - props.offsetX
-                    )
-                      ? 'border-r-4'
-                      : ''
-                  } ${
-                    y >= props.offsetY &&
-                    x >= props.offsetX &&
-                    lines.vertical[x - props.offsetX]?.includes(
-                      y - props.offsetY
-                    )
-                      ? 'border-b-4'
-                      : ''
-                  }`}
+                  className={`relative flex w-12 h-12 items-center justify-center ${border}`}
                   key={x}
                 >
                   { wordStartNumber >= 0 ? <span className="absolute top-0 left-1 text-xs">{wordStartNumber+1}</span> : null}
-                  { props.showSolution ? letter : null }
+                  { props.showSolution && (
+                    <input className="text-center" type="text" size={1} value={letter} pattern="[A-Z]" onChange={(e) => {
+                      const letter = e.target.value.substr(-1).toUpperCase()
+                      console.log(letter)
+                      if (isLetter(letter)) {
+                        console.log(letter)
+                        dispatch(change(letter, x,y))
+                      }
+                    }}
+                    onClick={e => (e.target as HTMLInputElement).select()}
+                    tabIndex={0}/>
+                  )}
                 </div>
               )
             })}
