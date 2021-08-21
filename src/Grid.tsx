@@ -8,8 +8,6 @@ import {
   isLetter,
   addWord,
   word,
-  undo,
-  redo,
   isValidWord,
 } from './reducer'
 import { StateContext } from './StateContext'
@@ -105,6 +103,9 @@ export function Grid(props: GridProps) {
       ? 'border-green-400'
       : 'border-red-800'
   }
+  function focusInput(x: number, y: number) {
+    document.getElementById(`letter-${x}-${y}`)?.focus()
+  }
   return (
     <>
       {state.grid.map((row, y) => {
@@ -147,7 +148,7 @@ export function Grid(props: GridProps) {
               return (
                 <div
                   draggable
-                  className="relative flex w-12 h-12 items-center justify-center"
+                  className="relative flex w-10 h-10 items-center justify-center"
                   key={x}
                   onDragStart={() => {
                     setDragStart({ x, y })
@@ -173,11 +174,11 @@ export function Grid(props: GridProps) {
                   }}
                 >
                   <div
-                    className={`${border} w-12 h-12 flex items-center justify-center`}
+                    className={`${border} w-10 h-10 flex items-center justify-center`}
                   >
                     {props.highlightVertical && (
                       <div
-                        className={`absolute border-red-400 w-10 h-12 pointer-events-none ${
+                        className={`absolute border-red-400 w-8 h-10 pointer-events-none ${
                           R.find(
                             (w) =>
                               x === w.start.x + state.offsetX[0] &&
@@ -211,7 +212,7 @@ export function Grid(props: GridProps) {
                     )}
                     {props.highlightHorizontal && (
                       <div
-                        className={`absolute border-blue-400 w-12 h-10 pointer-events-none ${
+                        className={`absolute border-blue-400 w-10 h-8 pointer-events-none ${
                           R.find(
                             (w) =>
                               x === w.start.x + state.offsetX[0] &&
@@ -245,7 +246,7 @@ export function Grid(props: GridProps) {
                     )}
                     {dragStart && (
                       <div
-                        className={`absolute ${dragBorderColor} w-9 h-9 pointer-events-none ${
+                        className={`absolute ${dragBorderColor} w-7 h-7 pointer-events-none ${
                           x === dragStart?.x && y === dragStart?.y
                             ? 'border-l-4 border-t-4'
                             : ''
@@ -276,7 +277,7 @@ export function Grid(props: GridProps) {
                     {props.showSolution && (
                       <input
                         id={`letter-${x}-${y}`}
-                        className="text-center"
+                        className="text-center w-10 h-10 bg-transparent border-none outline-none"
                         type="text"
                         size={1}
                         value={letter}
@@ -298,27 +299,20 @@ export function Grid(props: GridProps) {
                         onKeyDown={(e) => {
                           switch (e.key) {
                             case 'ArrowLeft':
-                              document
-                                .getElementById(`letter-${x - 1}-${y}`)
-                                ?.focus()
+                              focusInput(x - 1, y)
                               e.preventDefault()
                               break
                             case 'ArrowRight':
-                              document
-                                .getElementById(`letter-${x + 1}-${y}`)
-                                ?.focus()
+                              focusInput(x + 1, y)
                               e.preventDefault()
                               break
                             case 'ArrowUp':
-                              document
-                                .getElementById(`letter-${x}-${y - 1}`)
-                                ?.focus()
+                              focusInput(x, y - 1)
                               e.preventDefault()
                               break
                             case 'ArrowDown':
-                              document
-                                .getElementById(`letter-${x}-${y + 1}`)
-                                ?.focus()
+                            case 'Enter':
+                              focusInput(x, y + 1)
                               e.preventDefault()
                               break
                           }

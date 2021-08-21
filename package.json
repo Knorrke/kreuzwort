@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^12.1.10",
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
+    "@types/ramda": "types/npm-ramda#dist",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "ramda": "^0.27.1",
@@ -47,7 +48,6 @@
     ]
   },
   "devDependencies": {
-    "@types/ramda": "^0.27.44",
     "autoprefixer": "^9.8.6",
     "gh-pages": "^3.2.3",
     "postcss": "^7.0.36",
