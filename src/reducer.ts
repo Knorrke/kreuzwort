@@ -21,8 +21,6 @@ export interface State extends BaseState {
 export interface BaseState {
   grid: (Letter | '')[][]
   words: Word[]
-  offsetX: [number, number]
-  offsetY: [number, number]
 }
 
 function isBaseState(state: State | BaseState): state is BaseState {

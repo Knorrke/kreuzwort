@@ -5,8 +5,6 @@ import { State, Action, BaseState } from './reducer'
 const baseState: BaseState = {
   grid: R.times(() => R.times<''>(() => '', 26), 19),
   words: [],
-  offsetX: [1, 1],
-  offsetY: [2, 1],
 }
 
 export const initialState = {

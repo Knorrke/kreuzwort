@@ -42,7 +42,7 @@ function getLines2(
   )
   const filtered: Word[] = R.filter(
     (word) =>
-      horizontal ? word.start.y == word.end.y : word.start.x == word.end.x,
+      horizontal ? word.start.y === word.end.y : word.start.x === word.end.x,
     words
   )
   R.forEach((word: Word) => {
@@ -56,20 +56,10 @@ function getLines2(
   return lines
 }
 
-export function getLines({ grid, words, offsetX, offsetY }: State) {
+export function getLines({ grid, words }: State) {
   return {
-    horizontal: getLines2(
-      grid[0].length - offsetX[0],
-      grid.length - offsetY[0],
-      words,
-      true
-    ),
-    vertical: getLines2(
-      grid.length - offsetY[0],
-      grid[0].length - offsetX[0],
-      words,
-      false
-    ),
+    horizontal: getLines2(grid[0].length, grid.length, words, true),
+    vertical: getLines2(grid.length, grid[0].length, words, false),
   }
 }
 
@@ -94,24 +84,21 @@ export function Grid(props: GridProps) {
   const numbers = getNumbers(state)
   const [dragStart, setDragStart] = React.useState<Pos>()
   const [dragEnd, setDragEnd] = React.useState<Pos>()
-  let dragBorderColor = ''
-  if (dragStart && dragEnd) {
-    const x1 = dragStart.x - state.offsetX[0]
-    const y1 = dragStart.y - state.offsetY[0]
-    const x2 = dragEnd.x - state.offsetX[0]
-    const y2 = dragEnd.y - state.offsetY[0]
-    dragBorderColor = isValidWord(
-      word(
-        Math.min(x1, x2),
-        Math.min(y1, y2),
-        Math.max(x1, x2),
-        Math.max(y1, y2)
-      ),
-      state.words
-    )
-      ? 'border-green-400'
-      : 'border-red-800'
-  }
+  const dragBorderColor =
+    dragStart && dragEnd
+      ? isValidWord(
+          word(
+            Math.min(dragStart.x, dragEnd.x),
+            Math.min(dragStart.y, dragEnd.y),
+            Math.max(dragStart.x, dragEnd.x),
+            Math.max(dragStart.y, dragEnd.y)
+          ),
+          state.words
+        )
+        ? 'border-green-400'
+        : 'border-red-800'
+      : ''
+
   function focusInput(x: number, y: number) {
     document.getElementById(`letter-${x}-${y}`)?.focus()
   }
@@ -136,31 +123,20 @@ export function Grid(props: GridProps) {
                 (w) => w.start.y === w.end.y,
                 state.words
               )
-              const wordStartNumber = R.indexOf(
-                { x: x - state.offsetX[0], y: y - state.offsetY[0] },
-                numbers
-              )
-              const border =
-                'border border-black ' +
-                (letter ||
-                (y >= state.offsetY[0] &&
-                  x >= state.offsetX[0] &&
-                  y < state.grid.length - state.offsetY[1] &&
-                  x < state.grid[0].length - state.offsetX[1])
-                  ? `${
-                      lines.horizontal[y - state.offsetY[0]]?.includes(
-                        x - state.offsetX[0]
-                      ) && letter
-                        ? 'border-r-4'
-                        : 'pr-1'
-                    } ${
-                      lines.vertical[x - state.offsetX[0]]?.includes(
-                        y - state.offsetY[0]
-                      ) && letter
-                        ? 'border-b-4'
-                        : 'pb-1'
-                    }`
-                  : props.showSolution ? 'border-dashed' : 'border-none')
+              const wordStartNumber = R.indexOf({ x, y }, numbers)
+              const border = letter
+                ? `border-black border ${
+                    lines.horizontal[y]?.includes(x) && state.grid[y][x + 1]
+                      ? 'border-r-4'
+                      : 'pr-1'
+                  } ${
+                    lines.vertical[x]?.includes(y) && state.grid[y + 1][x]
+                      ? 'border-b-4'
+                      : 'pb-1'
+                  }`
+                : props.showSolution
+                ? 'border-black border border-dashed'
+                : 'border-none'
               return (
                 <div
                   draggable
@@ -177,12 +153,7 @@ export function Grid(props: GridProps) {
                     if (dragStart && dragEnd) {
                       dispatch(
                         addWord(
-                          word(
-                            dragStart.x - state.offsetX[0],
-                            dragStart.y - state.offsetY[0],
-                            dragEnd.x - state.offsetX[0],
-                            dragEnd.y - state.offsetY[0]
-                          )
+                          word(dragStart.x, dragStart.y, dragEnd.x, dragEnd.y)
                         )
                       )
                       setDragStart(undefined)
@@ -197,9 +168,7 @@ export function Grid(props: GridProps) {
                       <div
                         className={`absolute border-red-400 w-8 h-10 pointer-events-none ${
                           R.find(
-                            (w) =>
-                              x === w.start.x + state.offsetX[0] &&
-                              y === w.start.y + state.offsetY[0],
+                            (w) => x === w.start.x && y === w.start.y,
                             vertical
                           )
                             ? 'border-l-4 border-t-4'
@@ -207,19 +176,17 @@ export function Grid(props: GridProps) {
                         } ${
                           R.find(
                             (w) =>
-                              x === w.start.x + state.offsetX[0] &&
-                              x === w.end.x + state.offsetX[0] &&
-                              y >= w.start.y + state.offsetY[0] &&
-                              y <= w.end.y + state.offsetY[0],
+                              x === w.start.x &&
+                              x === w.end.x &&
+                              y >= w.start.y &&
+                              y <= w.end.y,
                             vertical
                           )
                             ? 'border-l-4 border-r-4'
                             : ''
                         } ${
                           R.find(
-                            (w) =>
-                              x === w.end.x + state.offsetX[0] &&
-                              y === w.end.y + state.offsetY[0],
+                            (w) => x === w.end.x && y === w.end.y,
                             vertical
                           )
                             ? 'border-r-4 border-b-4'
@@ -231,9 +198,7 @@ export function Grid(props: GridProps) {
                       <div
                         className={`absolute border-blue-400 w-10 h-8 pointer-events-none ${
                           R.find(
-                            (w) =>
-                              x === w.start.x + state.offsetX[0] &&
-                              y === w.start.y + state.offsetY[0],
+                            (w) => x === w.start.x && y === w.start.y,
                             horizontal
                           )
                             ? 'border-l-4 border-t-4'
@@ -241,19 +206,17 @@ export function Grid(props: GridProps) {
                         } ${
                           R.find(
                             (w) =>
-                              y === w.start.y + state.offsetY[0] &&
-                              y === w.end.y + state.offsetY[0] &&
-                              x >= w.start.x + state.offsetX[0] &&
-                              x <= w.end.x + state.offsetX[0],
+                              y === w.start.y &&
+                              y === w.end.y &&
+                              x >= w.start.x &&
+                              x <= w.end.x,
                             horizontal
                           )
                             ? 'border-t-4 border-b-4'
                             : ''
                         } ${
                           R.find(
-                            (w) =>
-                              x === w.end.x + state.offsetX[0] &&
-                              y === w.end.y + state.offsetY[0],
+                            (w) => x === w.end.x && y === w.end.y,
                             horizontal
                           )
                             ? 'border-r-4 border-b-4'
