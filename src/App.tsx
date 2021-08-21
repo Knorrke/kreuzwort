@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUndo, faRedo, faTrash } from '@fortawesome/free-solid-svg-icons'
 import React from 'react'
 import { GlobalHotKeys } from 'react-hotkeys'
 import { AutoSave, loadSavedState } from './AutoSave'
@@ -27,16 +29,30 @@ function App() {
             }}
           >
             <AutoSave />
-            <div className="right flex flex-row space-x-4">
+            <div className="right flex flex-row space-x-4 mb-4">
               <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => dispatch(undo())}
+              >
+                <FontAwesomeIcon icon={faUndo}  className="mr-2"/>
+                Rückgängig
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => dispatch(redo())}
+              >
+                <FontAwesomeIcon icon={faRedo} className="mr-2" />
+                Wiederholen
+              </button>
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => {
                   if (window.confirm('Alles löschen?')) dispatch(reset())
                 }}
               >
-                Reset
+                <FontAwesomeIcon icon={faTrash}  className="mr-2" />
+                Zurücksetzen
               </button>
-              <button onClick={() => dispatch(undo())}>Undo</button>
-              <button onClick={() => dispatch(redo())}>Redo</button>
             </div>
             <Grid
               showSolution
