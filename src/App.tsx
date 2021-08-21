@@ -50,7 +50,7 @@ function App() {
                   value={highlightVertical ? 'checked' : ''}
                   onChange={(e) => setHighlightVertical(!highlightVertical)}
                 />
-                <label htmlFor="highlightHorizontal">
+                <label htmlFor="highlightVertical">
                   Vertikale Wörter hervorheben
                 </label>
               </div>

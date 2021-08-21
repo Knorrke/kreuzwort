@@ -1,6 +1,17 @@
 import * as R from 'ramda'
 import React from 'react'
-import { State, Pos, Word, change, isLetter, addWord, word, undo, redo } from './reducer'
+import {
+  State,
+  Pos,
+  Word,
+  change,
+  isLetter,
+  addWord,
+  word,
+  undo,
+  redo,
+  isValidWord,
+} from './reducer'
 import { StateContext } from './StateContext'
 
 export interface GridProps {
@@ -76,6 +87,24 @@ export function Grid(props: GridProps) {
   const numbers = getNumbers(state)
   const [dragStart, setDragStart] = React.useState<Pos>()
   const [dragEnd, setDragEnd] = React.useState<Pos>()
+  let dragBorderColor = ''
+  if (dragStart && dragEnd) {
+    const x1 = dragStart.x - state.offsetX[0]
+    const y1 = dragStart.y - state.offsetY[0]
+    const x2 = dragEnd.x - state.offsetX[0]
+    const y2 = dragEnd.y - state.offsetY[0]
+    dragBorderColor = isValidWord(
+      word(
+        Math.min(x1, x2),
+        Math.min(y1, y2),
+        Math.max(x1, x2),
+        Math.max(y1, y2)
+      ),
+      state.words
+    )
+      ? 'border-green-400'
+      : 'border-red-800'
+  }
   return (
     <>
       {state.grid.map((row, y) => {
@@ -216,7 +245,7 @@ export function Grid(props: GridProps) {
                     )}
                     {dragStart && (
                       <div
-                        className={`absolute border-blue-400 w-9 h-9 pointer-events-none ${
+                        className={`absolute ${dragBorderColor} w-9 h-9 pointer-events-none ${
                           x === dragStart?.x && y === dragStart?.y
                             ? 'border-l-4 border-t-4'
                             : ''
@@ -246,18 +275,54 @@ export function Grid(props: GridProps) {
                     ) : null}
                     {props.showSolution && (
                       <input
+                        id={`letter-${x}-${y}`}
                         className="text-center"
                         type="text"
                         size={1}
                         value={letter}
                         pattern="[A-Z]"
                         onChange={(e) => {
-                          const letter = e.target.value.substr(-1).toUpperCase()
-                          if (isLetter(letter)) {
-                            dispatch(change(letter, x, y))
+                          if (!e.target.value) {
+                            dispatch(change('', x, y))
+                          } else {
+                            const letter = e.target.value
+                              .substr(-1)
+                              .toUpperCase()
+                            if (isLetter(letter)) {
+                              dispatch(change(letter, x, y))
+                            }
                           }
                         }}
                         onClick={(e) => (e.target as HTMLInputElement).select()}
+                        onFocus={(e) => (e.target as HTMLInputElement).select()}
+                        onKeyDown={(e) => {
+                          switch (e.key) {
+                            case 'ArrowLeft':
+                              document
+                                .getElementById(`letter-${x - 1}-${y}`)
+                                ?.focus()
+                              e.preventDefault()
+                              break
+                            case 'ArrowRight':
+                              document
+                                .getElementById(`letter-${x + 1}-${y}`)
+                                ?.focus()
+                              e.preventDefault()
+                              break
+                            case 'ArrowUp':
+                              document
+                                .getElementById(`letter-${x}-${y - 1}`)
+                                ?.focus()
+                              e.preventDefault()
+                              break
+                            case 'ArrowDown':
+                              document
+                                .getElementById(`letter-${x}-${y + 1}`)
+                                ?.focus()
+                              e.preventDefault()
+                              break
+                          }
+                        }}
                         tabIndex={0}
                       />
                     )}

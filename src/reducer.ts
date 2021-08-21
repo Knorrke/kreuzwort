@@ -25,7 +25,7 @@ export interface BaseState {
   offsetY: [number, number]
 }
 
-function isBaseState(state: State|BaseState) : state is BaseState {
+function isBaseState(state: State | BaseState): state is BaseState {
   return (state as State).history === undefined
 }
 
@@ -46,11 +46,28 @@ export function withHistory(baseState: BaseState): State {
     },
   }
 }
+export function isValidWord(word: Word, words: Word[]) {
+  const filterSameLine = R.filter((w) => {
+    return word.start.x === word.end.x // word is vertical
+      ? w.start.x === w.end.x && w.start.x === word.start.x // filter only vertical in same col
+      : w.start.y === w.end.y && w.start.y === word.start.y // filter only horizontal in same row
+  }, words)
+  return (
+        // check if word start is intersecting existing word
+        R.findIndex((w) => {
+      if (word.start.x === word.end.x) {
+        return word.start.y >= w.start.y && word.start.y <= w.end.y
+      } else {
+        return word.start.x >= w.start.x && word.start.x <= w.end.x
+      }
+    }, filterSameLine) === -1
+  )
+}
 
 interface ChangeAction {
   type: 'ChangeAction'
   payload: {
-    letter: Letter
+    letter: Letter|''
     x: number
     y: number
   }
@@ -75,12 +92,19 @@ interface InitializeAction {
   type: 'InitializeAction'
 }
 
-export type Action = ChangeAction | WordAction | UndoAction | RedoAction | InitializeAction
+export type Action =
+  | ChangeAction
+  | WordAction
+  | UndoAction
+  | RedoAction
+  | InitializeAction
 
-
-export function reducer(prev: State|BaseState, action: Action = {
-  type: 'InitializeAction'
-}): State {
+export function reducer(
+  prev: State | BaseState,
+  action: Action = {
+    type: 'InitializeAction',
+  }
+): State {
   const previous = isBaseState(prev) ? withHistory(prev) : prev
   switch (action.type) {
     case 'ChangeAction':
@@ -102,15 +126,17 @@ export function reducer(prev: State|BaseState, action: Action = {
         },
       }
     case 'WordAction':
-      return {
-        ...previous,
-        words: [...previous.words, action.payload.word],
-        history: {
-          ...previous.history,
-          actions: [...previous.history.actions, action],
-          undoStack: [],
-        },
-      }
+      return isValidWord(action.payload.word, previous.words)
+        ? {
+            ...previous,
+            words: [...previous.words, action.payload.word],
+            history: {
+              ...previous.history,
+              actions: [...previous.history.actions, action],
+              undoStack: [],
+            },
+          }
+        : previous
     case 'UndoAction': {
       const nextState = R.reduce(
         reducer,
@@ -121,12 +147,18 @@ export function reducer(prev: State|BaseState, action: Action = {
         ...nextState,
         history: {
           ...nextState.history,
-          undoStack: [...previous.history.undoStack, previous.history.actions[previous.history.actions.length -1]]
-        }
+          undoStack: [
+            ...previous.history.undoStack,
+            previous.history.actions[previous.history.actions.length - 1],
+          ],
+        },
       }
     }
     case 'RedoAction': {
-      const nextState = reducer(previous, previous.history.undoStack[previous.history.undoStack.length - 1])
+      const nextState = reducer(
+        previous,
+        previous.history.undoStack[previous.history.undoStack.length - 1]
+      )
       console.log('redone', nextState, previous.history)
       return {
         ...nextState,
@@ -141,7 +173,7 @@ export function reducer(prev: State|BaseState, action: Action = {
   }
 }
 
-export function change(letter: Letter, x: number, y: number): ChangeAction {
+export function change(letter: Letter|'', x: number, y: number): ChangeAction {
   return {
     type: 'ChangeAction',
     payload: {
