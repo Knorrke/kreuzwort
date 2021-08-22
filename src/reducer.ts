@@ -48,18 +48,24 @@ export function isValidWord(word: Word, words: Word[]) {
   // check if it is in one line
   if (word.start.x !== word.end.x && word.start.y !== word.end.y) return false
 
-  const filterSameLine = R.filter((w) => {
+  const filterSameLine = R.filter((other) => {
     return word.start.x === word.end.x // word is vertical
-      ? w.start.x === w.end.x && w.start.x === word.start.x // filter only vertical in same col
-      : w.start.y === w.end.y && w.start.y === word.start.y // filter only horizontal in same row
+      ? other.start.x === other.end.x && other.start.x === word.start.x // filter only vertical in same col
+      : other.start.y === other.end.y && other.start.y === word.start.y // filter only horizontal in same row
   }, words)
   return (
     // check if word start is intersecting existing word
     R.findIndex((w) => {
       if (word.start.x === word.end.x) {
-        return word.start.y >= w.start.y && word.start.y <= w.end.y
+        return (
+          (word.start.y >= w.start.y && word.start.y <= w.end.y) ||
+          (w.start.y >= word.start.y && w.start.y <= word.end.y)
+        )
       } else {
-        return word.start.x >= w.start.x && word.start.x <= w.end.x
+        return (
+          (word.start.x >= w.start.x && word.start.x <= w.end.x) ||
+          (w.start.x >= word.start.x && w.start.x <= word.end.x)
+        )
       }
     }, filterSameLine) === -1
   )
@@ -74,8 +80,21 @@ interface ChangeAction {
   }
 }
 
-interface WordAction {
-  type: 'WordAction'
+interface AddWordAction {
+  type: 'AddWordAction'
+  payload: {
+    word: Word
+  }
+}
+interface ChangeWordAction {
+  type: 'ChangeWordAction'
+  payload: {
+    old: Word
+    new: Word
+  }
+}
+interface RemoveWordAction {
+  type: 'RemoveWordAction'
   payload: {
     word: Word
   }
@@ -90,7 +109,7 @@ interface RedoAction {
 }
 
 interface ResetAction {
-  type: 'ResetAction',
+  type: 'ResetAction'
   payload: {
     baseState?: BaseState
   }
@@ -102,7 +121,9 @@ interface InitializeAction {
 
 export type Action =
   | ChangeAction
-  | WordAction
+  | AddWordAction
+  | ChangeWordAction
+  | RemoveWordAction
   | UndoAction
   | RedoAction
   | ResetAction
@@ -134,7 +155,7 @@ export function reducer(
           undoStack: [],
         },
       }
-    case 'WordAction':
+    case 'AddWordAction':
       return isValidWord(action.payload.word, previous.words)
         ? {
             ...previous,
@@ -146,6 +167,29 @@ export function reducer(
             },
           }
         : previous
+    case 'ChangeWordAction':
+      return {
+        ...previous,
+        words: R.map(
+          (w) => (R.equals(w, action.payload.old) ? action.payload.new : w),
+          previous.words
+        ),
+        history: {
+          ...previous.history,
+          actions: [...previous.history.actions, action],
+          undoStack: [],
+        },
+      }
+    case 'RemoveWordAction':
+      return {
+        ...previous,
+        words: R.without([action.payload.word], previous.words),
+        history: {
+          ...previous.history,
+          actions: [...previous.history.actions, action],
+          undoStack: [],
+        },
+      }
     case 'UndoAction': {
       const nextState = R.reduce(
         reducer,
@@ -200,9 +244,28 @@ export function change(
   }
 }
 
-export function addWord(word: Word): WordAction {
+export function addWord(word: Word): AddWordAction {
   return {
-    type: 'WordAction',
+    type: 'AddWordAction',
+    payload: {
+      word: word,
+    },
+  }
+}
+
+export function changeWord(oldWord: Word, newWord: Word): ChangeWordAction {
+  return {
+    type: 'ChangeWordAction',
+    payload: {
+      old: oldWord,
+      new: newWord,
+    },
+  }
+}
+
+export function removeWord(word: Word): RemoveWordAction {
+  return {
+    type: 'RemoveWordAction',
     payload: {
       word: word,
     },
@@ -221,11 +284,11 @@ export function redo(): RedoAction {
   }
 }
 
-export function reset(initial?:BaseState): ResetAction {
+export function reset(initial?: BaseState): ResetAction {
   return {
     type: 'ResetAction',
     payload: {
-      baseState: initial
-    }
+      baseState: initial,
+    },
   }
 }
