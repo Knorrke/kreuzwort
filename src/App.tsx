@@ -1,5 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUndo, faRedo, faTrash } from '@fortawesome/free-solid-svg-icons'
+import {
+  faUndo,
+  faRedo,
+  faTrash,
+  faDownload,
+} from '@fortawesome/free-solid-svg-icons'
+import download from 'downloadjs'
+import { toPng } from 'html-to-image'
 import React from 'react'
 import { GlobalHotKeys } from 'react-hotkeys'
 import { AutoSave, loadSavedState } from './AutoSave'
@@ -8,15 +15,34 @@ import { Action, redo, reducer, reset, State, undo } from './reducer'
 import { initialState, StateContext } from './StateContext'
 import { Definitions } from './Definitions'
 
+function Button(
+  props: React.PropsWithChildren<{
+    color: string
+    onClick: () => void
+    title?: string
+  }>
+) {
+  const { color, children, ...params } = props
+  return (
+    <button
+      className={`bg-${color}-500 hover:bg-${color}-700 text-white font-bold py-2 px-4 rounded`}
+      {...params}
+    >
+      {children}
+    </button>
+  )
+}
 function App() {
   const [state, dispatch] = React.useReducer<React.Reducer<State, Action>>(
     reducer,
     loadSavedState() || initialState
   )
+  const solutionRef = React.createRef<HTMLDivElement>()
+  const gridRef = React.createRef<HTMLDivElement>()
   const [highlightHorizontal, setHighlightHorizontal] = React.useState(true)
   const [highlightVertical, setHighlightVertical] = React.useState(true)
   return (
-    <div className="mx-auto sm:w-3/4 md:w-2/4 mt-10 inset-0 flex items-center justify-center">
+    <div className="mx-auto sm:w-3/4 md:w-2/4 my-10 inset-0 flex items-center justify-center">
       <div className="flex flex-col items-center justify-center">
         <StateContext.Provider value={{ state: state, dispatch: dispatch }}>
           <GlobalHotKeys
@@ -31,22 +57,22 @@ function App() {
           >
             <AutoSave />
             <div className="right flex flex-row space-x-4 mb-4">
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              <Button
+                color="blue"
                 onClick={() => dispatch(undo())}
-                title="Rückgängig (Strg + Z)"
+                title="Rückgängig (Strg+Z)"
               >
                 <FontAwesomeIcon icon={faUndo} />
-              </button>
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              </Button>
+              <Button
+                color="blue"
                 onClick={() => dispatch(redo())}
-                title="Wiederholen (Strg + Y)"
+                title="Wiederholen (Strg+Y)"
               >
                 <FontAwesomeIcon icon={faRedo} />
-              </button>
-              <button
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              </Button>
+              <Button
+                color="red"
                 onClick={() => {
                   if (window.confirm('Alles löschen?')) {
                     dispatch(reset(initialState))
@@ -55,7 +81,24 @@ function App() {
               >
                 <FontAwesomeIcon icon={faTrash} className="mr-2" />
                 Zurücksetzen
-              </button>
+              </Button>
+              <Button
+                color="blue"
+                onClick={() => {
+                  if (solutionRef.current) {
+                    toPng(solutionRef.current, { quality:1, pixelRatio:1, cacheBust: true })
+                      .then(function (dataUrl) {
+                        download(dataUrl, 'solution.png')
+                      })
+                      .catch(function (error) {
+                        console.error('oops, something went wrong!', error)
+                      })
+                  }
+                }}
+                title="Download"
+              >
+                <FontAwesomeIcon icon={faDownload} />
+              </Button>
             </div>
             <div className="flex flex-row flex-align-left mb-4">
               <div className="flex space-x-2 mr-6">
@@ -83,15 +126,40 @@ function App() {
                 </label>
               </div>
             </div>
-            <Grid
-              showSolution
-              highlightHorizontal={highlightHorizontal}
-              highlightVertical={highlightVertical}
-            />
-            <h2 className="text-2xl my-8">Vorschau:</h2>
+            <div ref={solutionRef}>
+              <Grid
+                showSolution
+                highlightHorizontal={highlightHorizontal}
+                highlightVertical={highlightVertical}
+              />
+            </div>
+            <hr className="border border-gray-400 my-4 w-full" />
+            <div className="my-8">
+              <span className="text-2xl mr-3">Vorschau: </span>
+              <Button
+                color="blue"
+                onClick={() => {
+                  if (gridRef.current) {
+                    toPng(gridRef.current)
+                      .then(function (dataUrl) {
+                        download(dataUrl, 'grid.png')
+                      })
+                      .catch(function (error) {
+                        console.error('oops, something went wrong!', error)
+                      })
+                  }
+                }}
+                title="Download"
+              >
+                <FontAwesomeIcon icon={faDownload} className="mr-2" />
+                Rätsel herunterladen
+              </Button>
+            </div>
             <div className="flex flex-row space-x-12">
-              <Definitions/>
-              <Grid />
+              <div ref={gridRef}>
+                <Grid />
+              </div>
+              <Definitions />
             </div>
           </GlobalHotKeys>
         </StateContext.Provider>

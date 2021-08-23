@@ -26,7 +26,7 @@ export function Definitions() {
   const verticalWithNumbersSorted = R.sortWith([R.ascend(R.prop('number'))], verticalWithNumbers)
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col shadow-md p-4 border rounded">
       <h3 className="text-xl font-bold">Waagerecht:</h3>
       {horizontalWithNumbersSorted.map(({ wordBounds, number }) => {
         let word = ''
