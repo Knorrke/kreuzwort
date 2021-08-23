@@ -59,8 +59,8 @@ function App() {
             <div className="flex flex-row flex-align-left mb-4">
               <div className="flex space-x-2 mr-6">
                 <input
+                  id="highlightHorizontal"
                   className="form-checkbox"
-                  name="highlightHorizontal"
                   type="checkbox"
                   value={highlightHorizontal ? 'checked' : ''}
                   onChange={(e) => setHighlightHorizontal(!highlightHorizontal)}
@@ -71,6 +71,7 @@ function App() {
               </div>
               <div className="flex space-x-2">
                 <input
+                  id="highlightVertical"
                   className="form-checkbox"
                   type="checkbox"
                   value={highlightVertical ? 'checked' : ''}

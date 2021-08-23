@@ -45,7 +45,9 @@ export function withHistory(baseState: BaseState): State {
   }
 }
 export function isValidWord(word: Word, words: Word[]) {
-  // check if it is in one line
+  // check that it is longer than one character
+  if (R.equals(word.start, word.end)) return false
+  // check that it is in one line
   if (word.start.x !== word.end.x && word.start.y !== word.end.y) return false
 
   const filterSameLine = R.filter((other) => {
@@ -55,7 +57,7 @@ export function isValidWord(word: Word, words: Word[]) {
   }, words)
   return (
     // check if word start is intersecting existing word
-    R.findIndex((w) => {
+    R.none((w) => {
       if (word.start.x === word.end.x) {
         return (
           (word.start.y >= w.start.y && word.start.y <= w.end.y) ||
@@ -67,7 +69,7 @@ export function isValidWord(word: Word, words: Word[]) {
           (w.start.x >= word.start.x && w.start.x <= word.end.x)
         )
       }
-    }, filterSameLine) === -1
+    }, filterSameLine)
   )
 }
 
