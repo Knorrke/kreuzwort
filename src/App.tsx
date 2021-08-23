@@ -17,15 +17,16 @@ import { Definitions } from './Definitions'
 
 function Button(
   props: React.PropsWithChildren<{
-    color: string
+    bg: string
+    'hover-bg': string
     onClick: () => void
     title?: string
   }>
 ) {
-  const { color, children, ...params } = props
+  const { bg, 'hover-bg': hoverBg, children, ...params } = props
   return (
     <button
-      className={`bg-${color}-500 hover:bg-${color}-700 text-white font-bold py-2 px-4 rounded`}
+      className={`${bg} ${hoverBg} text-white font-bold py-2 px-4 rounded`}
       {...params}
     >
       {children}
@@ -58,21 +59,24 @@ function App() {
             <AutoSave />
             <div className="right flex flex-row space-x-4 mb-4">
               <Button
-                color="blue"
+                bg="bg-blue-500"
+                hover-bg="hover:bg-blue-700"
                 onClick={() => dispatch(undo())}
                 title="Rückgängig (Strg+Z)"
               >
                 <FontAwesomeIcon icon={faUndo} />
               </Button>
               <Button
-                color="blue"
+                bg="bg-blue-500"
+                hover-bg="hover:bg-blue-700"
                 onClick={() => dispatch(redo())}
                 title="Wiederholen (Strg+Y)"
               >
                 <FontAwesomeIcon icon={faRedo} />
               </Button>
               <Button
-                color="red"
+                bg="bg-red-500"
+                hover-bg="hover:bg-red-700"
                 onClick={() => {
                   if (window.confirm('Alles löschen?')) {
                     dispatch(reset(initialState))
@@ -83,10 +87,15 @@ function App() {
                 Zurücksetzen
               </Button>
               <Button
-                color="blue"
+                bg="bg-blue-500"
+                hover-bg="hover:bg-blue-700"
                 onClick={() => {
                   if (solutionRef.current) {
-                    toPng(solutionRef.current, { quality:1, pixelRatio:1, cacheBust: true })
+                    toPng(solutionRef.current, {
+                      quality: 1,
+                      pixelRatio: 1,
+                      cacheBust: true,
+                    })
                       .then(function (dataUrl) {
                         download(dataUrl, 'solution.png')
                       })
@@ -137,7 +146,8 @@ function App() {
             <div className="my-8">
               <span className="text-2xl mr-3">Vorschau: </span>
               <Button
-                color="blue"
+                bg="bg-blue-500"
+                hover-bg="hover:bg-blue-700"
                 onClick={() => {
                   if (gridRef.current) {
                     toPng(gridRef.current)
