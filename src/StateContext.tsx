@@ -3,7 +3,7 @@ import * as R from 'ramda'
 import { State, Action, BaseState } from './reducer'
 
 const baseState: BaseState = {
-  grid: R.times(() => R.times<''>(() => '', 26), 19),
+  grid: R.times(() => R.times<''>(() => '', 25), 15),
   words: [],
 }
 

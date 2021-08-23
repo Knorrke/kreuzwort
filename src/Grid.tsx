@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import * as R from 'ramda'
 import React from 'react'
-import { MarkWordDragZone } from './AddWordDragZone'
+import { MarkWordDragZone as AddWordDragZone } from './AddWordDragZone'
 import { Highlights } from './Highlight'
 import { LetterInput } from './LetterInput'
 import { State, Pos, Word, word, isValidWord } from './reducer'
@@ -88,7 +88,7 @@ export function Grid(props: GridProps) {
   const horizontal = R.filter((w) => w.start.y === w.end.y, state.words)
 
   return (
-    <>
+    <div className="flex flex-col items-center justify-center">
       {state.grid.map((row, y) => {
         return (
           <div
@@ -102,7 +102,7 @@ export function Grid(props: GridProps) {
             {row.map((letter, x) => {
               const wordStartNumber = R.indexOf({ x, y }, numbers)
               return (
-                <MarkWordDragZone
+                <AddWordDragZone
                   key={x}
                   x={x}
                   y={y}
@@ -119,10 +119,14 @@ export function Grid(props: GridProps) {
                         'border-dashed': !letter && props.showSolution,
                         'border-none': !letter && !props.showSolution,
                       },
-                      lines.horizontal[y].includes(x) && state.grid[y][x + 1]
+                      letter &&
+                        lines.horizontal[y].includes(x) &&
+                        state.grid[y][x + 1]
                         ? 'border-r-4'
                         : 'pr-1',
-                      lines.vertical[x].includes(y) && state.grid[y + 1][x]
+                      letter &&
+                        lines.vertical[x].includes(y) &&
+                        state.grid[y + 1][x]
                         ? 'border-b-4'
                         : 'pb-1'
                     )}
@@ -147,12 +151,12 @@ export function Grid(props: GridProps) {
                       <LetterInput x={x} y={y} letter={letter} />
                     )}
                   </div>
-                </MarkWordDragZone>
+                </AddWordDragZone>
               )
             })}
           </div>
         )
       })}
-    </>
+    </div>
   )
 }
