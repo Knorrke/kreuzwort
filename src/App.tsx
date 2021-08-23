@@ -63,8 +63,8 @@ function App() {
                   id="highlightHorizontal"
                   className="form-checkbox"
                   type="checkbox"
-                  value={highlightHorizontal ? 'checked' : ''}
-                  onChange={(e) => setHighlightHorizontal(!highlightHorizontal)}
+                  checked={highlightHorizontal}
+                  onChange={() => setHighlightHorizontal(!highlightHorizontal)}
                 />
                 <label htmlFor="highlightHorizontal">
                   Horizontale Wörter hervorheben
@@ -75,8 +75,8 @@ function App() {
                   id="highlightVertical"
                   className="form-checkbox"
                   type="checkbox"
-                  value={highlightVertical ? 'checked' : ''}
-                  onChange={(e) => setHighlightVertical(!highlightVertical)}
+                  checked={highlightVertical}
+                  onChange={() => setHighlightVertical(!highlightVertical)}
                 />
                 <label htmlFor="highlightVertical">
                   Vertikale Wörter hervorheben

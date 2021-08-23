@@ -55,7 +55,7 @@ export function Highlights(props: HighlightsProps) {
             verticalWords
           )}
           end={R.any((w) => x === w.end.x && y === w.end.y, verticalWords)}
-          color="border-red-400"
+          color="border-blue-400"
         />
       )}
       {props.highlightHorizontal && (
